@@ -1,10 +1,23 @@
-version: "3.9"
+version: "3"
 
 services:
-  backend:
+
+  ai-backend:
     image: h7s91/hosseinkochike:latest
     container_name: ai-backend
     ports:
       - "8000:8000"
-    restart: always
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  ollama_data:
 
