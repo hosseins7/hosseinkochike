@@ -14,5 +14,5 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build docker image
-        run: docker build -t fastapi-aiops .
+        run: docker build -t fastapi-aiops ./backend
 
