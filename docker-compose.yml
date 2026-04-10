@@ -1,6 +1,14 @@
-version: "3"
+version: "3.9"
 
 services:
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
 
   ai-backend:
     image: h7s91/hosseinkochike:latest
@@ -10,14 +18,14 @@ services:
     depends_on:
       - ollama
 
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
+  frontend:
+    build: ./frontend
+    container_name: frontend
     ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
+      - "3000:3000"
+    depends_on:
+      - ai-backend
 
 volumes:
-  ollama_data:
+  ollama:
 
