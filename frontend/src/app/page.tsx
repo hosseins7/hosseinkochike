@@ -1,224 +1,161 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState,useEffect,useRef } from "react"
 import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"
 
-export default function Home() {
+export default function Home(){
 
-  const [messages, setMessages] = useState<any[]>([])
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
+const [messages,setMessages]=useState<any[]>([])
+const [input,setInput]=useState("")
+const [loading,setLoading]=useState(false)
 
-  const bottomRef = useRef<HTMLDivElement>(null)
+const bottomRef=useRef<any>(null)
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, loading])
+useEffect(()=>{
+bottomRef.current?.scrollIntoView({behavior:"smooth"})
+},[messages])
 
-  const sendMessage = async () => {
+const send=async()=>{
 
-    if (!input.trim()) return
+if(!input.trim())return
 
-    const userMessage = {
-      role: "user",
-      content: input
-    }
+const user={role:"user",content:input}
 
-    setMessages(prev => [...prev, userMessage])
-    setInput("")
-    setLoading(true)
+setMessages(prev=>[...prev,user])
+setInput("")
+setLoading(true)
 
-    try {
+try{
 
-      const res = await fetch("http://localhost:8000/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          prompt: input
-        })
-      })
+const res=await fetch("http://localhost:8000/ask",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({prompt:input})
+})
 
-      const data = await res.json()
+const data=await res.json()
 
-      const aiMessage = {
-        role: "assistant",
-        content: data.response
-      }
+const ai={role:"assistant",content:data.response}
 
-      setMessages(prev => [...prev, aiMessage])
+setMessages(prev=>[...prev,ai])
 
-    } catch {
+}catch{
 
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "⚠️ Error connecting to backend"
-        }
-      ])
-    }
+setMessages(prev=>[
+...prev,
+{role:"assistant",content:"خطا در اتصال به سرور"}
+])
 
-    setLoading(false)
-  }
+}
 
-  const handleKey = (e:any) => {
+setLoading(false)
 
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
+}
 
-  }
+return(
 
-  return (
+<div className="flex flex-col h-screen">
 
-    <div className="flex h-screen bg-gray-950 text-gray-100">
+<div className="border-b border-gray-800 p-4 text-center text-lg">
+دستیار DevOps
+</div>
 
-      {/* SIDEBAR */}
+<div className="flex-1 overflow-y-auto p-6 space-y-6">
 
-      <div className="w-64 border-r border-gray-800 flex flex-col">
+{messages.map((m,i)=>(
 
-        <div className="p-4 font-bold text-lg">
-          ⚙️ DevOps Copilot
-        </div>
+<div key={i}
+className={
+m.role==="user"
+?"flex justify-start"
+:"flex justify-end"
+}
+>
 
-        <button
-          onClick={()=>setMessages([])}
-          className="mx-3 mb-4 p-2 bg-gray-800 rounded hover:bg-gray-700"
-        >
-          + New Chat
-        </button>
+<div
+className={
+m.role==="user"
+?"bg-blue-600 p-4 rounded-xl max-w-xl"
+:"bg-gray-900 border border-gray-800 p-4 rounded-xl max-w-xl"
+}
+>
 
-        <div className="px-3 text-sm text-gray-400 mb-2">
-          Tools
-        </div>
+<ReactMarkdown
+remarkPlugins={[remarkGfm]}
+components={{
+code({node,inline,className,children,...props}){
 
-        <div className="px-3 space-y-2 text-sm">
+const match=/language-(\w+)/.exec(className||"")
 
-          <div className="p-2 rounded bg-gray-900">
-            Docker Logs
-          </div>
+return !inline && match ?(
 
-          <div className="p-2 rounded bg-gray-900">
-            Kubernetes YAML
-          </div>
+<SyntaxHighlighter
+style={oneDark}
+language={match[1]}
+PreTag="div"
+>
+{String(children).replace(/\n$/,"")}
+</SyntaxHighlighter>
 
-          <div className="p-2 rounded bg-gray-900">
-            CI/CD Debug
-          </div>
+):(
 
-          <div className="p-2 rounded bg-gray-900">
-            Image Analysis
-          </div>
+<code className="bg-black px-1 py-0.5 rounded">
+{children}
+</code>
 
-        </div>
+)
 
-      </div>
+}
+}}
+>
 
-      {/* MAIN */}
+{m.content}
 
-      <div className="flex flex-col flex-1">
+</ReactMarkdown>
 
-        {/* HEADER */}
+</div>
 
-        <div className="border-b border-gray-800 p-4 flex justify-between">
+</div>
 
-          <div className="font-semibold">
-            AI DevOps Assistant
-          </div>
+))}
 
-          <div className="text-sm text-green-400">
-            llama3:8b
-          </div>
+{loading &&(
 
-        </div>
+<div className="text-gray-400">
+در حال فکر کردن...
+</div>
 
-        {/* CHAT */}
+)}
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+<div ref={bottomRef}/>
 
-          {messages.map((msg, i) => (
+</div>
 
-            <div
-              key={i}
-              className={`max-w-3xl ${
-                msg.role === "user"
-                  ? "ml-auto"
-                  : ""
-              }`}
-            >
+<div className="border-t border-gray-800 p-4 flex gap-3">
 
-              <div
-                className={`p-4 rounded-xl ${
-                  msg.role === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-900 border border-gray-800"
-                }`}
-              >
+<input
+className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3"
+placeholder="سوال DevOps بپرس..."
+value={input}
+onChange={(e)=>setInput(e.target.value)}
+onKeyDown={(e)=>{if(e.key==="Enter")send()}}
+/>
 
-                <ReactMarkdown>
-                  {msg.content}
-                </ReactMarkdown>
+<button
+onClick={send}
+className="bg-blue-600 px-6 rounded-lg"
+>
+ارسال
+</button>
 
-              </div>
+</div>
 
-            </div>
+</div>
 
-          ))}
+)
 
-          {loading && (
-
-            <div className="bg-gray-900 border border-gray-800 p-4 rounded-xl w-24">
-
-              <div className="flex gap-1">
-
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"/>
-
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"/>
-
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"/>
-
-              </div>
-
-            </div>
-
-          )}
-
-          <div ref={bottomRef} />
-
-        </div>
-
-        {/* INPUT */}
-
-        <div className="border-t border-gray-800 p-4">
-
-          <div className="flex gap-3">
-
-            <textarea
-              className="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-3 resize-none focus:outline-none"
-              rows={2}
-              placeholder="Ask about Docker, Kubernetes, CI/CD..."
-              value={input}
-              onChange={(e)=>setInput(e.target.value)}
-              onKeyDown={handleKey}
-            />
-
-            <button
-              onClick={sendMessage}
-              className="px-6 bg-blue-600 rounded-lg hover:bg-blue-500"
-            >
-              Send
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  )
 }
 
