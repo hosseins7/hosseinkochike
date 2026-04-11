@@ -1,7 +1,6 @@
 "use client"
 
 import {useState,useEffect,useRef} from "react"
-import {v4 as uuid} from "uuid"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
@@ -37,7 +36,7 @@ bottomRef.current?.scrollIntoView({behavior:"smooth"})
 
 const newChat=()=>{
 
-const id=uuid()
+const id=crypto.randomUUID()
 
 const newChats={...chats,[id]:[]}
 
@@ -72,7 +71,7 @@ setLoading(true)
 
 try{
 
-const res=await fetch("http://localhost:8000/ask",{
+const res=await fetch("http://ai-backend:8000/ask",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({prompt:input})
@@ -93,7 +92,18 @@ setChats(updated2)
 
 saveChats(updated2)
 
-}catch{
+}catch(e){
+
+const ai={role:"assistant",content:"Error connecting to backend"}
+
+const updated2={
+
+...updated,
+[chatId]:[...updated[chatId],ai]
+
+}
+
+setChats(updated2)
 
 }
 
@@ -105,11 +115,11 @@ const messages=chats[chatId]||[]
 
 return(
 
-<div className="flex h-screen">
+<div className="flex h-screen bg-[#020617] text-white">
 
-<div className="w-64 bg-[#020617] border-r border-gray-800 p-4 space-y-4">
+<div className="w-64 border-r border-gray-800 p-4 space-y-4">
 
-<div className="text-lg">DevOps Copilot</div>
+<div className="text-lg font-bold">DevOps Copilot</div>
 
 <button
 onClick={newChat}
@@ -125,7 +135,7 @@ className="w-full bg-blue-600 p-2 rounded"
 <div
 key={id}
 onClick={()=>setChatId(id)}
-className="p-2 bg-gray-900 rounded cursor-pointer"
+className="p-2 bg-gray-900 rounded cursor-pointer hover:bg-gray-800"
 >
 
 Chat {id.slice(0,4)}
