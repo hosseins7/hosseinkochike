@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 import requests
 
 app = FastAPI()
@@ -15,6 +16,12 @@ app.add_middleware(
 
 class Prompt(BaseModel):
     prompt: str
+
+
+@app.options("/ask")
+async def options_ask():
+    return Response(status_code=200)
+
 
 @app.post("/ask")
 async def ask_ai(data: Prompt):
