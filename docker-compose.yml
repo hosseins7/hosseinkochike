@@ -12,7 +12,7 @@ services:
       - ollama_data:/root/.ollama
 
   ai-backend:
-    image: h7s91/hosseinkochike:latest
+    build: ./backend
     container_name: ai-backend
     restart: unless-stopped
     ports:
